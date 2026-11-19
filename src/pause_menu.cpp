@@ -48,7 +48,8 @@ void PauseMenu::build_ui() {
   title_ = label_create(bar, m_.font_small, color::text_dim, "");
   lv_obj_set_size(title_, 1, lv_font_get_line_height(m_.font_small));
   lv_obj_set_flex_grow(title_, 1);
-  lv_label_set_long_mode(title_, LV_LABEL_LONG_MODE_DOTS);
+  // (scrolls when it does not fit beside "Paused", the FPS and the battery)
+  lv_label_set_long_mode(title_, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
   fps_ = label_create(bar, m_.font_small, color::text_dim, "");
   battery_ = label_create(bar, m_.font_small, color::text, battery_text(-1, false).c_str());
 
@@ -169,7 +170,13 @@ void PauseMenu::update_slot_text() {
   lv_label_set_text(slot_caption_, text);
 }
 
-void PauseMenu::set_fps(float fps) { lv_label_set_text_fmt(fps_, "%.1f FPS", fps); }
+void PauseMenu::set_fps(float fps) {
+  // (snprintf, not lv_label_set_text_fmt: LVGL's own printf may be built
+  // without floats, as on the box, and then prints no number)
+  char text[16];
+  std::snprintf(text, sizeof(text), "%.1f FPS", fps);
+  lv_label_set_text(fps_, text);
+}
 
 void PauseMenu::set_battery(int percent, bool charging) {
   lv_label_set_text(battery_, battery_text(percent, charging).c_str());

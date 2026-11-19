@@ -184,6 +184,15 @@ void scenes(const emu_ui::Metrics &m, const std::string &out, const char *name, 
     menu.set_slot_image(nullptr);
     menu.set_game("Link's Awakening", "gb");
     save(out + "/" + name + "-pause-empty-slot.ppm");
+    {
+      emu_ui::PauseMenu m2({.metrics = m, .keypad = keypad, .settings = settings_rows(box)});
+      m2.set_game("Legend of Zelda, The - Link's Awakening DX (USA, Europe) (Rev 2) (SGB Enhanced)", "gbc");
+      m2.show();
+      for (int t = 0; t < 10; t++) { g_tick += 10; lv_timer_handler(); }
+      m2.set_battery(100, true);
+      m2.set_fps(59.7f);
+      save(out + "/" + name + "-pause-long.ppm");
+    }
   }
   lv_display_delete(disp);
 }
