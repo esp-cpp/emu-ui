@@ -9,6 +9,17 @@ extern "C" void lv_image_cache_drop(const void *src);
 namespace emu_ui {
 
 namespace {
+
+/// A game's line under its title: its subtitle, else its save count
+std::string detail(const Game &g) {
+  if (!g.subtitle.empty()) return g.subtitle;
+  if (g.saves > 0) return std::to_string(g.saves) + (g.saves == 1 ? " save" : " saves");
+  return "";
+}
+
+} // namespace
+
+namespace {
 // large screens: the list on the left, the selected game on the right
 constexpr int kListW = 456;
 constexpr int kCover = 360;
@@ -245,15 +256,29 @@ void Launcher::build_list() {
     lv_obj_set_style_outline_width(row, m_.focus_w, LV_STATE_CHECKED);
     lv_obj_set_style_outline_pad(row, 0, LV_STATE_CHECKED);
     lv_obj_set_style_pad_hor(row, m_.compact ? 6 : 16, 0);
-    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
-    auto *title = label_create(row, m_.font_body, color::text, g.title.c_str());
-    lv_obj_set_size(title, lv_pct(100), lv_font_get_line_height(m_.font_body));
-    lv_label_set_long_mode(title, LV_LABEL_LONG_MODE_DOTS);
-    if (!m_.compact && !g.subtitle.empty()) {
-      auto *sub = label_create(row, m_.font_small, 0xC8CDD5, g.subtitle.c_str());
-      lv_obj_set_size(sub, lv_pct(100), lv_font_get_line_height(m_.font_small));
-      lv_label_set_long_mode(sub, LV_LABEL_LONG_MODE_DOTS);
+    if (m_.compact) {
+      // one line: the title, then the saves as a badge
+      lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+      lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+      lv_obj_set_style_pad_column(row, 4, 0);
+      auto *title = label_create(row, m_.font_body, color::text, g.title.c_str());
+      lv_obj_set_size(title, 1, lv_font_get_line_height(m_.font_body));
+      lv_obj_set_flex_grow(title, 1);
+      lv_label_set_long_mode(title, LV_LABEL_LONG_MODE_DOTS);
+      if (g.saves > 0) {
+        label_create(row, m_.font_small, 0xC8CDD5, (LV_SYMBOL_SAVE " " + std::to_string(g.saves)).c_str());
+      }
+    } else {
+      lv_obj_set_flex_flow(row, LV_FLEX_FLOW_COLUMN);
+      lv_obj_set_flex_align(row, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+      auto *title = label_create(row, m_.font_body, color::text, g.title.c_str());
+      lv_obj_set_size(title, lv_pct(100), lv_font_get_line_height(m_.font_body));
+      lv_label_set_long_mode(title, LV_LABEL_LONG_MODE_DOTS);
+      if (const auto text = detail(g); !text.empty()) {
+        auto *sub = label_create(row, m_.font_small, 0xC8CDD5, (g.subtitle.empty() ? LV_SYMBOL_SAVE "  " + text : text).c_str());
+        lv_obj_set_size(sub, lv_pct(100), lv_font_get_line_height(m_.font_small));
+        lv_label_set_long_mode(sub, LV_LABEL_LONG_MODE_DOTS);
+      }
     }
     set_index(row, i);
     lv_obj_add_event_cb(row, row_event, LV_EVENT_CLICKED, this);
@@ -326,7 +351,7 @@ void Launcher::show_selected() {
   const auto &g = games_[selected_];
   lv_label_set_text(title_, g.title.c_str());
   if (subtitle_) {
-    lv_label_set_text(subtitle_, play_enabled_ ? g.subtitle.c_str() : "The SD card is a USB drive: switch it off in Settings to play.");
+    lv_label_set_text(subtitle_, play_enabled_ ? detail(g).c_str() : "The SD card is a USB drive: switch it off in Settings to play.");
   }
   // the console first: a board may decode its art and the cover into one
   // buffer, so the cover is the last image asked for

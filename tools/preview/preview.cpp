@@ -135,7 +135,13 @@ void scenes(const emu_ui::Metrics &m, const std::string &out, const char *name, 
   for (int i = 0; i < 5; i++) covers.push_back(placeholder(cw, box ? 130 : ch, palette[i][0], palette[i][1]));
 
   std::vector<emu_ui::Game> games;
-  for (const auto &g : kGames) games.push_back({g.title, g.subtitle, g.key, g.name, g.short_name});
+  for (const auto &g : kGames) {
+    // ("2 saves" in the table: a save count, as the boards give it)
+    const std::string sub = g.subtitle;
+    const bool saves = sub.find(" save") != std::string::npos;
+    games.push_back({.title = g.title, .subtitle = saves ? "" : sub, .console_key = g.key, .console_name = g.name,
+                     .console_short = g.short_name, .saves = saves ? std::atoi(sub.c_str()) : 0});
+  }
 
   {
     emu_ui::Launcher launcher({

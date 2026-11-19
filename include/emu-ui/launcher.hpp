@@ -17,10 +17,11 @@ namespace emu_ui {
 /// A game in the launcher's list.
 struct Game {
   std::string title{};
-  std::string subtitle{};      ///< under the title ("2 saves"), may be empty
+  std::string subtitle{};      ///< under the title (else the save count), may be empty
   std::string console_key{};   ///< rom_info's ConsoleInfo::key: its style and tab
   std::string console_name{};  ///< "Super Nintendo"
   std::string console_short{}; ///< "SNES" (small screens)
+  int saves{0};                ///< save states: "2 saves" (no subtitle) or a badge
 };
 
 /// The game launcher: the games grouped by console over the console's
