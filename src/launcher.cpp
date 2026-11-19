@@ -94,6 +94,9 @@ void Launcher::build_ui() {
   lv_obj_add_flag(list_, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_add_flag(list_, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_add_flag(list_, LV_OBJ_FLAG_USER_1); // (every arrow as a key)
+  // (the keys move the selection, which scrolls into view: without this
+  // LVGL also scrolls a focused list a quarter page per up / down)
+  lv_obj_remove_flag(list_, LV_OBJ_FLAG_SCROLL_WITH_ARROW);
   lv_obj_set_scroll_dir(list_, LV_DIR_VER);
   lv_obj_set_scrollbar_mode(list_, LV_SCROLLBAR_MODE_AUTO);
   lv_obj_set_flex_flow(list_, LV_FLEX_FLOW_COLUMN);
@@ -572,6 +575,7 @@ void Launcher::open_picker() {
   lv_obj_add_flag(picker_grid_, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_add_flag(picker_grid_, LV_OBJ_FLAG_USER_1);
   lv_obj_set_scrollbar_mode(picker_grid_, LV_SCROLLBAR_MODE_OFF);
+  lv_obj_remove_flag(picker_grid_, LV_OBJ_FLAG_SCROLL_WITH_ARROW); // (as the list)
   lv_obj_set_width(picker_grid_, cols * tw + (cols - 1) * gap + 2 * (m_.focus_w + 2));
   const int grid_top = compact ? 28 : m_.bar_h + 8;  // (under the title)
   lv_obj_set_height(picker_grid_, m_.height - m_.hint_h - grid_top - (compact ? 4 : 24));
