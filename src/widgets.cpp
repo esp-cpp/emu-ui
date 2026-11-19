@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <map>
 
 namespace emu_ui {
 
@@ -193,10 +192,22 @@ lv_draw_buf_t *make_tile(const ConsoleStyle &s) {
 } // namespace
 
 const lv_draw_buf_t *pattern_tile(const ConsoleStyle &style) {
-  static std::map<const ConsoleStyle *, lv_draw_buf_t *> tiles;
-  auto &tile = tiles[&style];
-  if (!tile) tile = make_tile(style);
-  return tile;
+  // a fixed table rather than a std::map: no heap node per console (on a
+  // board that keeps small allocations in internal RAM they add up); the
+  // styles are console_style()'s 14 static entries, the tiles LVGL buffers
+  struct Entry {
+    const ConsoleStyle *style;
+    lv_draw_buf_t *tile;
+  };
+  static Entry tiles[16];
+  for (auto &e : tiles) {
+    if (!e.style) e.style = &style;
+    if (e.style == &style) {
+      if (!e.tile) e.tile = make_tile(style);
+      return e.tile;
+    }
+  }
+  return nullptr; // (more styles than slots: the backdrop keeps its color)
 }
 
 void Backdrop::create(lv_obj_t *parent) {
