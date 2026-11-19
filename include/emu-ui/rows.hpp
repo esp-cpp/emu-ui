@@ -20,14 +20,15 @@ struct Row {
     NUMBER, ///< min..max shown as a number; left / right
     ACTION, ///< A or a tap runs set(0)
   };
-  std::string label;
+  // (every member has a default: the boards set only what they need)
+  std::string label{};
   Kind kind{Kind::ACTION};
   int min{0}, max{100}, step{10};
-  std::vector<std::string> choices;
-  std::function<int()> get;
-  std::function<void(int)> set;
+  std::vector<std::string> choices{};
+  std::function<int()> get{};
+  std::function<void(int)> set{};
   /// Text under the row (a hint, a status); re-read by refresh()
-  std::function<std::string()> note;
+  std::function<std::string()> note{};
   const char *symbol{nullptr}; ///< an LV_SYMBOL_* before the label
   bool danger{false};          ///< a red action (Quit)
 };

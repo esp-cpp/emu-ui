@@ -16,11 +16,11 @@ namespace emu_ui {
 
 /// A game in the launcher's list.
 struct Game {
-  std::string title;
-  std::string subtitle;      ///< under the title ("2 saves"), may be empty
-  std::string console_key;   ///< rom_info's ConsoleInfo::key: its style and tab
-  std::string console_name;  ///< "Super Nintendo"
-  std::string console_short; ///< "SNES" (small screens)
+  std::string title{};
+  std::string subtitle{};      ///< under the title ("2 saves"), may be empty
+  std::string console_key{};   ///< rom_info's ConsoleInfo::key: its style and tab
+  std::string console_name{};  ///< "Super Nintendo"
+  std::string console_short{}; ///< "SNES" (small screens)
 };
 
 /// The game launcher: the games grouped by console over the console's
@@ -36,20 +36,20 @@ struct Game {
 class Launcher {
 public:
   struct Config {
-    Metrics metrics;
-    std::string brand;              ///< the status bar's name (large screens)
+    Metrics metrics{Metrics::large_1280x720()};
+    std::string brand{};            ///< the status bar's name (large screens)
     lv_indev_t *keypad{nullptr};    ///< gets the launcher's groups
     /// The image source (lv_draw_buf_t* / lv_image_dsc_t*) of game `index`'s
     /// cover, valid until the next call; nullptr for none
-    std::function<const void *(size_t index)> cover;
+    std::function<const void *(size_t index)> cover{};
     /// Optional art for a console (boxart/consoles/<key>.jpg), valid until
     /// the next call; nullptr: the firmware's badge
-    std::function<const void *(const std::string &key)> console_art;
-    std::function<void(size_t index)> on_play;
-    std::function<void(size_t index)> on_select;
+    std::function<const void *(const std::string &key)> console_art{};
+    std::function<void(size_t index)> on_play{};
+    std::function<void(size_t index)> on_select{};
     /// The settings panel's rows
-    std::vector<Row> settings;
-    std::string version; ///< bottom right on large screens
+    std::vector<Row> settings{};
+    std::string version{}; ///< bottom right on large screens
   };
 
   explicit Launcher(Config config);

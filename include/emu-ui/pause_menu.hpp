@@ -25,14 +25,14 @@ public:
   enum class Action { RESUME, RESET, SAVE, LOAD, QUIT };
 
   struct Config {
-    Metrics metrics;
+    Metrics metrics{Metrics::large_1280x720()};
     lv_indev_t *keypad{nullptr};
     int slots{6}; ///< slots 0 .. slots - 1
-    std::function<void(Action)> on_action;
+    std::function<void(Action)> on_action{};
     /// The slot changed (the board loads its screenshot: set_slot_image())
-    std::function<void(int slot)> on_slot;
+    std::function<void(int slot)> on_slot{};
     /// Rows below the actions (volume, brightness, video ...)
-    std::vector<Row> settings;
+    std::vector<Row> settings{};
   };
 
   explicit PauseMenu(Config config);
