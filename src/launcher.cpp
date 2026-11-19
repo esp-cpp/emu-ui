@@ -325,13 +325,15 @@ void Launcher::show_selected() {
   if (subtitle_) {
     lv_label_set_text(subtitle_, play_enabled_ ? g.subtitle.c_str() : "The SD card is a USB drive: switch it off in Settings to play.");
   }
+  // the console first: a board may decode its art and the cover into one
+  // buffer, so the cover is the last image asked for
+  update_console_header();
   if (cfg_.cover) {
     if (const void *src = cfg_.cover(selected_)) {
       lv_image_cache_drop(src); // (a board may reuse one buffer for every cover)
       lv_image_set_src(cover_, src);
     }
   }
-  update_console_header();
   if (cfg_.on_select) cfg_.on_select(selected_);
 }
 
