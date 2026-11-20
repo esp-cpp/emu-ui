@@ -33,7 +33,7 @@ void PauseMenu::build_ui() {
   screen_ = lv_obj_create(nullptr);
   lv_obj_remove_flag(screen_, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_set_style_bg_color(screen_, rgb(color::background), 0);
-  backdrop_.create(screen_);
+  backdrop_.create(screen_, m_.pattern_px);
 
   auto *bar = box_create(screen_);
   const int bar_h = compact ? 20 : m_.bar_h;

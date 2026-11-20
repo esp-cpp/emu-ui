@@ -22,19 +22,21 @@ lv_obj_t *icon_create(lv_obj_t *parent, Shape shape, uint32_t accent, int h);
 lv_obj_t *badge_create(lv_obj_t *parent, const ConsoleStyle &style, const char *name, int h, const lv_font_t *font);
 
 /// The console's background tile (RGB565, made once per console and kept).
-const lv_draw_buf_t *pattern_tile(const ConsoleStyle &style);
+const lv_draw_buf_t *pattern_tile(const ConsoleStyle &style, int min_px = 0);
 
 /// A console's background behind a screen or a tile: its color with its
 /// pattern tiled over it. The first child of `parent`, filling it.
 class Backdrop {
 public:
-  void create(lv_obj_t *parent);
+  /// `pattern_px`: Metrics::pattern_px
+  void create(lv_obj_t *parent, int pattern_px = 0);
   void set(const ConsoleStyle &style);
   const ConsoleStyle *shown() const { return shown_; }
 
 private:
   lv_obj_t *parent_{nullptr};
   lv_obj_t *image_{nullptr};
+  int pattern_px_{0};
   const ConsoleStyle *shown_{nullptr};
 };
 

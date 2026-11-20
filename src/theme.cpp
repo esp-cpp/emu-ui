@@ -77,6 +77,7 @@ Metrics Metrics::compact_320x240() {
       .hint_h = 20,
       .row_h = 22,
       .focus_w = 2,
+      .pattern_px = 0,
       .compact = true,
   };
 }
@@ -96,6 +97,7 @@ Metrics Metrics::large_1280x720() {
       .hint_h = 56,
       .row_h = 60,
       .focus_w = 3,
+      .pattern_px = 64,
       .compact = false,
   };
 }

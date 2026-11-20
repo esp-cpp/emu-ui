@@ -50,7 +50,7 @@ void Launcher::build_ui() {
   screen_ = lv_obj_create(nullptr);
   lv_obj_remove_flag(screen_, LV_OBJ_FLAG_SCROLLABLE);
   lv_obj_set_style_bg_color(screen_, rgb(color::background), 0);
-  backdrop_.create(screen_);
+  backdrop_.create(screen_, m_.pattern_px);
 
   // the status bar
   bar_ = box_create(screen_);
@@ -628,7 +628,7 @@ void Launcher::open_picker() {
     lv_obj_set_style_outline_width(tile, m_.focus_w, LV_STATE_CHECKED);
     lv_obj_set_style_outline_pad(tile, 1, LV_STATE_CHECKED);
     auto bd = std::make_unique<Backdrop>();
-    bd->create(tile);
+    bd->create(tile, m_.pattern_px);
     bd->set(key.empty() ? console_style("other") : style);
     picker_backdrops_.push_back(std::move(bd));
     auto *stripe = box_create(tile);

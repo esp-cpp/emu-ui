@@ -150,7 +150,7 @@ uint32_t mix(uint32_t a, uint32_t b, int t) {
   return ch(16) | ch(8) | ch(0);
 }
 
-lv_draw_buf_t *make_tile(const ConsoleStyle &s) {
+lv_draw_buf_t *make_tile(const ConsoleStyle &s, int min_px) {
   // (the marks are the secondary color, faint over the background, so text
   // on top stays readable)
   const uint16_t bg = rgb565(s.background);
@@ -167,11 +167,16 @@ lv_draw_buf_t *make_tile(const ConsoleStyle &s) {
   case Pattern::PIXELS: w = h = 16; break;
   case Pattern::NONE: w = h = 8; break;
   }
-  auto *buf = lv_draw_buf_create(w, h, LV_COLOR_FORMAT_RGB565, LV_STRIDE_AUTO);
+  // the period, repeated to at least min_px a side
+  const int tw = min_px > w ? (min_px + w - 1) / w * w : w;
+  const int th = min_px > h ? (min_px + h - 1) / h * h : h;
+  auto *buf = lv_draw_buf_create(tw, th, LV_COLOR_FORMAT_RGB565, LV_STRIDE_AUTO);
   if (!buf) return nullptr;
-  for (int y = 0; y < h; y++) {
-    auto *row = reinterpret_cast<uint16_t *>(buf->data + y * buf->header.stride);
-    for (int x = 0; x < w; x++) {
+  for (int ty = 0; ty < th; ty++) {
+    auto *row = reinterpret_cast<uint16_t *>(buf->data + ty * buf->header.stride);
+    const int y = ty % h;
+    for (int tx = 0; tx < tw; tx++) {
+      const int x = tx % w;
       uint16_t c = bg;
       switch (s.pattern) {
       case Pattern::RIDGES: c = y < 3 ? mark : bg; break;
@@ -183,7 +188,7 @@ lv_draw_buf_t *make_tile(const ConsoleStyle &s) {
       case Pattern::PIXELS: c = ((x / 8) ^ (y / 8)) & 1 ? rgb565(mix(s.background, s.secondary, 10)) : bg; break;
       case Pattern::NONE: break;
       }
-      row[x] = c;
+      row[tx] = c;
     }
   }
   return buf;
@@ -191,27 +196,32 @@ lv_draw_buf_t *make_tile(const ConsoleStyle &s) {
 
 } // namespace
 
-const lv_draw_buf_t *pattern_tile(const ConsoleStyle &style) {
+const lv_draw_buf_t *pattern_tile(const ConsoleStyle &style, int min_px) {
   // a fixed table rather than a std::map: no heap node per console (on a
   // board that keeps small allocations in internal RAM they add up); the
   // styles are console_style()'s 14 static entries, the tiles LVGL buffers
   struct Entry {
     const ConsoleStyle *style;
+    int min_px;
     lv_draw_buf_t *tile;
   };
   static Entry tiles[16];
   for (auto &e : tiles) {
-    if (!e.style) e.style = &style;
-    if (e.style == &style) {
-      if (!e.tile) e.tile = make_tile(style);
+    if (!e.style) {
+      e.style = &style;
+      e.min_px = min_px;
+    }
+    if (e.style == &style && e.min_px == min_px) {
+      if (!e.tile) e.tile = make_tile(style, min_px);
       return e.tile;
     }
   }
   return nullptr; // (more styles than slots: the backdrop keeps its color)
 }
 
-void Backdrop::create(lv_obj_t *parent) {
+void Backdrop::create(lv_obj_t *parent, int pattern_px) {
   parent_ = parent;
+  pattern_px_ = pattern_px;
   image_ = lv_image_create(parent);
   lv_obj_remove_flag(image_, LV_OBJ_FLAG_CLICKABLE);
   lv_obj_add_flag(image_, LV_OBJ_FLAG_IGNORE_LAYOUT);
@@ -230,7 +240,7 @@ void Backdrop::set(const ConsoleStyle &style) {
     return;
   }
   lv_obj_remove_flag(image_, LV_OBJ_FLAG_HIDDEN);
-  lv_image_set_src(image_, pattern_tile(style));
+  lv_image_set_src(image_, pattern_tile(style, pattern_px_));
 }
 
 void HintBar::create(lv_obj_t *parent, const Metrics &m) {

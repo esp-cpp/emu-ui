@@ -64,6 +64,11 @@ struct Metrics {
   int16_t hint_h;  ///< the button hints at the bottom
   int16_t row_h;   ///< a game or setting row
   int16_t focus_w; ///< the focus ring
+  /// A backdrop's pattern tile repeats the pattern to at least this many
+  /// pixels a side (0: one period, a few pixels). LVGL draws a tiled image
+  /// one tile at a time, so a big screen covered in 6 px tiles costs tens of
+  /// thousands of tiny draws per redraw; 128 px tiles take a few dozen.
+  int16_t pattern_px;
   bool compact;    ///< a small screen: overlays fill it, covers are not scaled
 
   /// The ESP32-S3-BOX's 320x240 (Montserrat 12 / 14 / 16)
